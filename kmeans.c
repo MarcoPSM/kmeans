@@ -1,11 +1,19 @@
 /******************************************
  * Marco Martins                          *
  * projeto final de curso Eng.Informática *
- * algoritmo na pag. 344
+ * algoritmo na pag. 344                  *
  ******************************************/
 
+/*
+TAREFAS PARA 3-Feira:
+    Implementar todas as funcoes da analise univariavel
+    escrever o output num ficheiro
+    mostrar um grafico com octave
+    O dicheiro de entrada tem de entrar por argumento
+*/
+
 #include "dataset.h"
-#include <limits.h>
+
 /* 
 https://www.tutorialspoint.com/c_standard_library/limits_h.htm 
 */
@@ -27,11 +35,12 @@ int main(int argc, char *argv[]) {
     int e = 0;
 
     inic(&f);    
-    loadDatasetFromFile(&f, "datafile.txt");
+    loadDatasetFromFile(&f, "datafileA.txt");
+//    loadDatasetFromFile(&f, "datafile.txt");
 //    loadDatasetFromFile(&f, "dataset_img21.txt");
 
     puts("Listar todos");
-    listar(f);
+    //listar(f);
     printf("A media do dataset é: %d \n", media(&f));
     printf("A amplitude do dataset é: %d \n", amplitude(&f));
     printf("A variancia do dataset é: %f \n", variancia(&f));
@@ -156,7 +165,7 @@ void kmeans(DATASET *dataset, int k, int e) {
             
     for(int i=0; i<k; i++) {
         printf("Listar cluster %d \n", i);
-        listar(clusters[i]);
+        //listar(clusters[i]);
         printf("Media do cluster %d \n", media(&clusters[i]));
     }
 }

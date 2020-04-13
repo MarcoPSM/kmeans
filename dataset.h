@@ -21,8 +21,11 @@ void loadDatasetFromFile(DATASET *dataset, char *fileName);
 int media(DATASET *dataset);
 int amplitude(DATASET *dataset);
 float CDF(DATASET *dataset, int x);
+float PMF(DATASET *dataset, int x);
 int quantileFunction(DATASET *dataset, float q);
 float variancia(DATASET *dataset);
 float mediana(DATASET *dataset);
+int moda(DATASET *dataset);
+
 
 #endif

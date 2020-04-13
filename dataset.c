@@ -135,6 +135,29 @@ float CDF(DATASET *dataset, int x) {
 }
 
 /*
+    Empirical Probability Mass Function
+*/ 
+float PMF(DATASET *dataset, int x) {
+    if (dataset==NULL) {
+        /*nao ha elementos*/
+        printf("Nao ha elementos!");
+        return 0;
+    }
+    ENTITY *tmp = *dataset;
+    int soma = 0;
+    int n=0;
+    while(tmp != NULL) {
+        if(tmp->attribute = x) {
+            soma++;
+        }
+        n++;
+        tmp = tmp->next;
+    }
+
+    return (float)soma / (float) n;
+}
+
+/*
     Inverse Cumulative Distribution Function or quantile function (pag.43)
     F^{−1} (q) = min{x | F (x) ≥ q}   for q ∈ [0, 1]
 */
@@ -170,5 +193,9 @@ float variancia(DATASET *dataset) {
 
 float mediana(DATASET *dataset) {
     return (float) quantileFunction(dataset, 0.5);
+}
+
+int moda(DATASET *dataset) {
+    return 0;
 }
 
