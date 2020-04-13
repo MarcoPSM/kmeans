@@ -87,17 +87,13 @@ int amplitude(DATASET *dataset) {
     }
     ENTITY *tmp = *dataset;
     int min, max;
+    min = max= tmp->attribute;
     for (int i =0; tmp != NULL; i++) {
-        if(i==0) {
-            min = max = (int) tmp->attribute;
+        if(tmp->attribute < min) {
+            min = (int) tmp->attribute;
         }
-        else {
-            if(tmp->attribute < min) {
-                min = (int) tmp->attribute;
-            }
-            if(tmp->attribute > max) {
-                max = (int) tmp->attribute;
-            }
+        if(tmp->attribute > max) {
+            max = (int) tmp->attribute;
         }
         tmp = tmp->next;
     }
@@ -172,4 +168,7 @@ float variancia(DATASET *dataset) {
     return (float) media(dataset);
 }
 
+float mediana(DATASET *dataset) {
+    return (float) quantileFunction(dataset, 0.5);
+}
 

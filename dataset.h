@@ -23,5 +23,6 @@ int amplitude(DATASET *dataset);
 float CDF(DATASET *dataset, int x);
 int quantileFunction(DATASET *dataset, float q);
 float variancia(DATASET *dataset);
+float mediana(DATASET *dataset);
 
 #endif

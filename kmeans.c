@@ -35,6 +35,7 @@ int main(int argc, char *argv[]) {
     printf("A media do dataset é: %d \n", media(&f));
     printf("A amplitude do dataset é: %d \n", amplitude(&f));
     printf("A variancia do dataset é: %f \n", variancia(&f));
+    printf("A mediana do dataset é: %f \n", mediana(&f));
 
     kmeans(&f, k, e);
 
