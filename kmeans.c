@@ -34,12 +34,18 @@ int main(int argc, char *argv[]) {
     int k = 2;
     int e = 0;
 
+    if (argc<2) {
+        printf("Sintaxe: \n%s <nome_ficheiro>\n", argv[0]);
+        exit(1);
+    }
+
     inic(&f);    
-    loadDatasetFromFile(&f, "datafileA.txt");
+    loadDatasetFromFile(&f, argv[1]);
+//    loadDatasetFromFile(&f, "datafileA.txt");
 //    loadDatasetFromFile(&f, "datafile.txt");
 //    loadDatasetFromFile(&f, "dataset_img21.txt");
 
-    puts("Listar todos");
+    //puts("Listar todos");
     //listar(f);
     printf("A media do dataset é: %d \n", media(&f));
     printf("A amplitude do dataset é: %d \n", amplitude(&f));
@@ -47,6 +53,8 @@ int main(int argc, char *argv[]) {
     printf("A mediana do dataset é: %f \n", mediana(&f));
 
     kmeans(&f, k, e);
+
+    
 
     return 0;
 }

@@ -61,6 +61,9 @@ void loadDatasetFromFile(DATASET *dataset, char *fileName) {
     fclose(datafile);
 }
 
+/*
+    Sample Mean
+*/
 int media(DATASET *dataset) {
     if (dataset==NULL) {
         /*nao ha elementos*/
