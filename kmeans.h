@@ -5,6 +5,9 @@
 #include <stdlib.h>
 
 #define MAX_DIM 3
+#define TRUE 1 
+#define FALSE 0
+#define SPACE ' '
 
 int getNumberOfEntities(char *filename);
 int getNumberOfDimensions(char *filename);
@@ -20,6 +23,7 @@ void listCentroids(float centroids[], int n);
 
 void sampleMean(float MATRIZ[][MAX_DIM], float mean[MAX_DIM], int n, int m);
 
-void kmeans(float MATRIZ[][MAX_DIM], int n, int m, int k, int e);
+void kmeans(float MATRIZ[][MAX_DIM], int CLUSTERS[], int n, int m, int k, int e);
+void save(float MATRIZ[][MAX_DIM], int CLUSTERS[], int n, int m, char *filename);
 
 #endif

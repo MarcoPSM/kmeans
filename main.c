@@ -35,16 +35,21 @@ int main(int argc, char *argv[]) {
         printf("Sintaxe: \n%s <nome_ficheiro>\n", argv[0]);
         exit(1);
     }
-
+    // Output filename
+    char outfilename[] = "output/kmeans.out";
     //lines
-    int n = getNumberOfEntities(argv[0]);
+    int n = getNumberOfEntities(argv[1]);
     //dimensions
-    int d = getNumberOfDimensions(argv[0]);
+    int d = getNumberOfDimensions(argv[1]);
     //columns
     int m = d + 1;
 
     float MATRIZ[n][m];
     float mean[d];
+    /*lista de clusters
+       Uma lista do tamanho do dataset, em cada posicao fica o luster da 
+       entidade correspondente a essa posicao no dataset */
+    int CLUSTERS[n];
 
     int k = 2;
     int e = 0;
@@ -57,7 +62,9 @@ int main(int argc, char *argv[]) {
     listarMatriz(MATRIZ, n, d);
     listarArray(mean, d);
 
-    kmeans(MATRIZ, n, d, k, e);
+    kmeans(MATRIZ, CLUSTERS, n, d, k, e);
+
+    save(MATRIZ, CLUSTERS, n, d, outfilename);
 
     return 0;
 }
