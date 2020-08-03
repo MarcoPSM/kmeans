@@ -144,10 +144,10 @@ void sampleMean(float MATRIZ[][MAX_DIM], float mean[], int n, int m) {
 /*
     Empirical Cumulative Distribution Function
 */
-float CDF(float MATRIZ [][MAX_DIM], int n, int m, int x) {
+float CDF(float MATRIZ [][MAX_DIM], int n, int m, float x[]) {
     int soma = 0;
     for(int i=0; i<n; i++) {
-        if(MATRIZ[i][0] <= x) {
+        if(MATRIZ[i][0] <= x[0]) {
             soma++;
         }
     }
@@ -159,18 +159,17 @@ float CDF(float MATRIZ [][MAX_DIM], int n, int m, int x) {
     Inverse Cumulative Distribution Function or quantile function (pag.43)
     F^{−1} (q) = min{x | F (x) ≥ q}   for q ∈ [0, 1]
 */
-int quantileFunction(float MATRIZ [][MAX_DIM], int n, int m, float q) {
-    int x;
-    int i=0;
-    x=MATRIZ[0][0];
+float quantileFunction(float MATRIZ [][MAX_DIM], int n, int m, float q) {
+    float *x;
+    x=MATRIZ[0];
     for(int i=0; i<n; i++) {
         if(CDF(MATRIZ, n, m, x) >= q) {
-            if(MATRIZ[i][0] < x ) {
-                x=MATRIZ[i][0];
+            if(MATRIZ[i][0] < x[0] ) {
+                x=MATRIZ[i];
             }
         }
     }
-    return x;
+    return x[0];
 }
 
 
@@ -184,9 +183,6 @@ void initCentroids(float MATRIZ [][MAX_DIM], int n, int m, float centroids[], in
         value *= 2;
     }
 
-    /* testes */
-    /***************************/
-/*
     float quartil1;
     float quartil3;
     quartil1 = quantileFunction(MATRIZ, n, m, 0.25);
@@ -194,7 +190,7 @@ void initCentroids(float MATRIZ [][MAX_DIM], int n, int m, float centroids[], in
     printf("quartil1= %f quartil3= %f\n", quartil1, quartil3);
     centroids[0] = quartil1;
     centroids[1] = quartil3;
-*/
+
     /***************************/
 
     /* dividir o dataset em n+1 partes 
@@ -242,7 +238,7 @@ int getClosetsCentroid(float attributes[], int m, float centroids[], int n) {
                 colsestCentroid = i;
             }
         }
-        printf("ATTR:%f %f %f %f %d\n",attributes[0], centroids[i], distance, minDistance, colsestCentroid);
+        //printf("ATTR:%f %f %f %f %d\n",attributes[0], centroids[i], distance, minDistance, colsestCentroid);
     }
     return colsestCentroid;
 }
@@ -258,7 +254,7 @@ float calcCentroid(float MATRIZ[][MAX_DIM], int m, int clusters[], int n, int po
             soma+=MATRIZ[i][0];
             total++;
         }
-        printf("soma=%f total=%f C=%d A=%f P=%d\n", soma, total, clusters[i], MATRIZ[i][0], pos);
+        //printf("soma=%f total=%f C=%d A=%f P=%d\n", soma, total, clusters[i], MATRIZ[i][0], pos);
     }
 
     return soma / total;

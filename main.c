@@ -41,13 +41,13 @@ int main(int argc, char *argv[]) {
     int n = getNumberOfEntities(argv[1]);
     //dimensions
     int d = getNumberOfDimensions(argv[1]);
-    //columns
+    //columns 
     int m = d + 1;
 
     float MATRIZ[n][m];
     float mean[d];
     /*lista de clusters
-       Uma lista do tamanho do dataset, em cada posicao fica o luster da 
+       Uma lista do tamanho do dataset, em cada posicao fica o cluster da 
        entidade correspondente a essa posicao no dataset */
     int CLUSTERS[n];
 
@@ -59,8 +59,13 @@ int main(int argc, char *argv[]) {
     sampleMean(MATRIZ, mean, n, d);
 
     //puts("Listar todos");
-    listarMatriz(MATRIZ, n, d);
-    listarArray(mean, d);
+    //listarMatriz(MATRIZ, n, d);
+    //listarArray(mean, d);
+    printf("Nlinhas: %d\n", n);
+    printf("NColunas: %d\n", d);
+    for(int i=0; i<d; i++) {
+        printf("Media da dimensao %d: %f\n", i+1, mean[i]);
+    }
 
     kmeans(MATRIZ, CLUSTERS, n, d, k, e);
 

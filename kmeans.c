@@ -43,7 +43,7 @@ void kmeans(float MATRIZ[][MAX_DIM], int CLUSTERS[], int n, int m, int k, int e)
             
     for(int i=0; i<k; i++) {
         printf("Listar cluster %d \n", i);
-        listarCluster(MATRIZ, n, m, CLUSTERS, i);
+        //listarCluster(MATRIZ, n, m, CLUSTERS, i);
         //printf("Media do cluster %d \n", media(&clusters[i]));
     }
 }
