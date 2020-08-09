@@ -31,35 +31,44 @@ https://www.tutorialspoint.com/c_standard_library/limits_h.htm
 /* MAIN FUNCTION */
 int main(int argc, char *argv[]) {
 
-    if (argc<2) {
+    if (argc < EXPECTED_ARGUMENTS) {
         printf("Sintaxe: \n%s <nome_ficheiro>\n", argv[0]);
         exit(1);
     }
     // Output filename
-    char outfilename[] = "output/kmeans.out";
+    char outfilename[] = OUTPUT;
     //lines
     int n = getNumberOfEntities(argv[1]);
     //dimensions
     int d = getNumberOfDimensions(argv[1]);
     //columns 
-    int m = d + 1;
+    int m = d + ADDITIONAL_COLUMNS;
 
-    float MATRIZ[n][m];
+    if (d > ENTITY_MAX_DIMENSION) {
+        printf("O numero de dimensoes tem de ser no maximo %d", ENTITY_MAX_DIMENSION);
+        exit(1);
+    }
+
+    float matriz[n][m];
     float mean[d];
     /*lista de clusters
        Uma lista do tamanho do dataset, em cada posicao fica o cluster da 
        entidade correspondente a essa posicao no dataset */
     int CLUSTERS[n];
 
-    int k = 2;
-    int e = 0;
+    // estas variaveis se calhar passam a vir por argumento
+    int k = 4;
+    int e = 1;
 
   
-    loadMatrizFromFile(MATRIZ, n, d, argv[1]);
-    sampleMean(MATRIZ, mean, n, d);
+    loadMatrizFromFile(matriz, n, d, argv[1]);
+    sampleMean(matriz, mean, n, d);
+    calculateNorm(matriz, n, d);
+    initClusterAssociation(matriz, n, m);
+
 
     //puts("Listar todos");
-    //listarMatriz(MATRIZ, n, d);
+    listarMatriz(matriz, n, m);
     //listarArray(mean, d);
     printf("Nlinhas: %d\n", n);
     printf("NColunas: %d\n", d);
@@ -67,9 +76,9 @@ int main(int argc, char *argv[]) {
         printf("Media da dimensao %d: %f\n", i+1, mean[i]);
     }
 
-    kmeans(MATRIZ, CLUSTERS, n, d, k, e);
+    kmeans(matriz, CLUSTERS, n, d, k, e);
 
-    save(MATRIZ, CLUSTERS, n, d, outfilename);
+    save(matriz, n, d, outfilename);
 
     return 0;
 }

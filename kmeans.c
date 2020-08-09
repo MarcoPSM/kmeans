@@ -5,39 +5,39 @@ void kmeans(float MATRIZ[][MAX_DIM], int CLUSTERS[], int n, int m, int k, int e)
     /*iterador*/
     int t=0;
     /*lista de centroids*/
-    float centroids[k];
+    float centroids[k][m];
+    float oldCentroids[k][m];
 
     int pos;
     float aux;
     float delta;
 
     initCentroids(MATRIZ, n, m, centroids, k);
-    listCentroids(centroids, k);
+    //listCentroids(centroids, k, m);
 
     do {
-        t += 1;
-
-        for(int i=0; i<k;i++) {
-            initClusters(CLUSTERS, n);
-        }
+        t++;
 
         /*atribuicao de clusters*/
         for (int i=0; i<n; i++) {
             pos = getClosetsCentroid(MATRIZ[i], m, centroids, k);
-            CLUSTERS[i] = pos;
+            MATRIZ[i][m+1]= pos;
         }
 
+        //printf("centroids\n"); 
+        //listarMatriz(centroids, k, m);
+
+
         /*atualizar os centroids*/
-        delta = 0;
-        for(int i=0; i<k; i++) {
-            aux = calcCentroid(MATRIZ, m, CLUSTERS, n, i);
-            printf("d=%f aux=%f c=%f\n", delta, aux, centroids[i]);
-            delta += (centroids[i] < aux) ? aux-centroids[i] : centroids[i] - aux;
-            centroids[i] = aux;
-        }
-        
-        printf("delta %f \n", delta);
-    } while( delta > e );  
+        copyMatrix(centroids, oldCentroids, k, m);
+        calcCentroids(MATRIZ, n, m, centroids, k);
+
+        delta = calculateDelta(oldCentroids, centroids, k, m);
+
+        printf("delta %f t=%d\n", delta, t);
+        //printf("Press Any Key to Continue\n");  
+        //getchar();   
+    } while( delta > e && t < MAX_ITERATIONS);  
     printf("Iteracaoes: %d\n", t);  
 
             
