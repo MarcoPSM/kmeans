@@ -269,8 +269,8 @@ void initCentroids(float MATRIZ [][MAX_DIM], int n, int m, float centroids[][MAX
     for (int i=0; i<k; i++) {
         //printf("quartil = %f \n", quantil);
         aux = quantileFunction(MATRIZ, n, m, quantil);
-        for (int j=0; j<k;j++) {
-            centroids[i][j]=aux[j];
+        for (int j=0; j<m;j++) {
+            centroids[i][j]=aux[m];
         }
         quantil += quantil;
         //printf("quartil%d= %f \n", i, centroids[i]);
