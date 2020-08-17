@@ -1,8 +1,8 @@
 # kmeans
 K-Means Clustering Algorithm Implementation in C
 
-cc main.c kmeans.c functions.c -lm -o kmeans
 
-cc -pthread main.c kmeans.c functions.c functions_t.c -lm -o kmeans
+
+cc main.c general.c datasetMatrix.c centroidsMatrix.c datasetFile.c functions_t.c -lm -pthread -o kmeans
 
 ./kmeans datafiles/manaus.txt

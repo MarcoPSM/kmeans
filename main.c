@@ -16,17 +16,40 @@ PLANO :
     mostrar um grafico com octave
     O dicheiro de entrada tem de entrar por argumento
 
-cc kmeans.c dataset.c -o kmeans
+cc main.c general.c datasetMatrix.c centroidsMatrix.c datasetFile.c functions_t.c -lm -pthread -o kmeans
 
 */
 
 
 /* 
 https://www.tutorialspoint.com/c_standard_library/limits_h.htm 
+pointers:
+    https://codeforwin.org/2017/12/access-two-dimensional-array-using-pointers-c-programming.html
+Threads:
+    https://timmurphy.org/2010/05/04/pthreads-in-c-a-minimal-working-example/
 */
 
-#include "kmeans.h"
+#include "datasetMatrix.h"
+#include "general.h"
+#include "centroidsMatrix.h"
+#include "datasetFile.h"
 
+// Matrix for dataset
+float **dataset;
+// Number of lines
+int nLines;
+// Number of columns
+int nColumns;
+// Number of dimensions
+int nDimensions;
+// Number of clusters
+int k = DEFAULT_CLUSTERS_NUMBER;
+// Max Error
+float e = DEFAULT_MAX_CONVERGENCE;
+// Matrix for centroids
+float **centroids;
+
+void kmeans();
 
 /* MAIN FUNCTION */
 int main(int argc, char *argv[]) {
@@ -37,48 +60,49 @@ int main(int argc, char *argv[]) {
     }
     // Output filename
     char outfilename[] = OUTPUT;
-    //lines
-    int n = getNumberOfEntities(argv[1]);
-    //dimensions
-    int d = getNumberOfDimensions(argv[1]);
-    //columns 
-    int m = d + ADDITIONAL_COLUMNS;
 
-    if (d > ENTITY_MAX_DIMENSION) {
+    nLines = getNumberOfEntities(argv[1]);
+    nDimensions = getNumberOfDimensions(argv[1]);
+    nColumns = nDimensions + ADDITIONAL_COLUMNS;
+
+    if (nDimensions > ENTITY_MAX_DIMENSION) {
         printf("O numero de dimensoes tem de ser no maximo %d", ENTITY_MAX_DIMENSION);
         exit(1);
     }
 
-    float matriz[n][m];
-    float mean[d];
-    /*lista de clusters
-       Uma lista do tamanho do dataset, em cada posicao fica o cluster da 
-       entidade correspondente a essa posicao no dataset */
-    int CLUSTERS[n];
-
-    // estas variaveis se calhar passam a vir por argumento
-    int k = 4;
-    int e = 1;
-
-  
-    loadMatrizFromFile(matriz, n, d, argv[1]);
-    sampleMean(matriz, mean, n, d);
-    calculateNorm(matriz, n, d);
-    initClusterAssociation(matriz, n, m);
-
-
-    //puts("Listar todos");
-    listarMatriz(matriz, n, m);
-    //listarArray(mean, d);
-    printf("Nlinhas: %d\n", n);
-    printf("NColunas: %d\n", d);
-    for(int i=0; i<d; i++) {
-        printf("Media da dimensao %d: %f\n", i+1, mean[i]);
-    }
-
-    kmeans(matriz, CLUSTERS, n, d, k, e);
-
-    save(matriz, n, d, outfilename);
+    alocateDataset();
+    loadDataset(argv[1]);
+    listDataset();
+    calculateEntitiesNorm();
+    listFullDatasetMatrix();
+    kmeans();
+    saveDataset(outfilename);
 
     return 0;
+}
+
+void kmeans() {
+    /*iterador*/
+    int t=0;
+    float aux;
+    float delta;
+
+    alocateCentroids();
+    alocateOldCentroids();
+    initCentroidsMatrix();
+    listCentroidsMatrix();
+
+    e=0;
+
+    do {
+        t++;
+        updateClusterAssociation();
+        backupCentroids();
+        updateCentroids();
+        delta = getDelta();
+        printf("Delta=%f\n", delta);
+
+    } while( delta > e && t < MAX_ITERATIONS);  
+    printf("Iteracaoes: %d\n", t);  
+
 }
