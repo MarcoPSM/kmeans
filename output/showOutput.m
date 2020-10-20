@@ -2,10 +2,13 @@
 # Author: Marco Martins <marcopaulomartins@hotmail.com>
 # Date: 10/05/2020
 
-dimensions = 2;
-debug = 0;
+# sudo apt install epstool
+# sudo apt install fig2dev
+# sudo apt install pstoedit
 
-f = fopen("kmeans.out");
+dimensions = 2;
+
+f = fopen("kmeans_12.out");
 data = dlmread(f, ' ');
 fclose(f);
 
@@ -25,8 +28,14 @@ else
     y = zeros(size(subdata)(1));
 endif
 
+################ centroids ####
+f = fopen("centroids_12.out");
+centroids_data = dlmread(f, ' ');
+fclose(f);
+cx = [centroids_data(:, 1)];
+cy = [centroids_data(:, 2)];
+###############################
 figure(1);
-plot(x,y,"*3");
 hold on;
 
 ###
@@ -40,44 +49,15 @@ for i=0:nClusters
         my = zeros(size(mx)(1));
     endif
 
-    plot(mx,my,strcat("*",num2str(i+1)));
+    plot(mx,my,strcat(".",num2str(i+1)));
 end;
+#### centroids ####
+plot(cx,cy,"*k", "markersize", 10);
+###################
 hold off;
 xlabel("x");
 ylabel("y");
 title("kmeans");
 grid;
 
-pause (4);
-
-
-if debug == 1
-
-    #fprintf("%f\n", data(1,1));
-    fprintf("Linhas: %d\n", size(data)(1));
-    fprintf("colunas: %d\n", size(data)(2));
-    #fprintf("%d\n", size(data(1)));
-    #fprintf("%d\n", data(1,2));
-    fprintf("Linhas: %d\n", size(subdata)(1));
-    fprintf("colunas: %d\n", size(subdata)(2));
-    fprintf("Linhas: %d\n", size(clusters)(1));
-    fprintf("colunas: %d\n", size(clusters)(2));
-
-    fprintf("Max= %f\n", max(clusters));
-
-    fprintf("Min= %f\n", min(subdata(:, 1)) );
-    fprintf("Max= %f\n", max(subdata(:, 1)) );
-
-    fprintf("%d\n", interval);
-
-    fprintf("Linhas MX: %d\n", size(mx)(1));
-    fprintf("colunas MX: %d\n", size(mx)(2));
-
-    #
-    #interval =  ceil( (max(subdata(:, 1)) - min(subdata(:, 1)) ) / 10 );
-    #x = [(min(subdata(:, 1)) : interval : max(subdata(:, 1)) )];
-
-    #interval =  ceil( (max(subdata(:, 2)) - min(subdata(:, 2)) ) / 10 );
-    #y = [(min(subdata(:, 2)) : interval : max(subdata(:, 2)) )];
-    #
-endif
+pause (20);

@@ -5,12 +5,35 @@ extern float **dataset;
 extern int nLines;
 extern int nColumns;
 extern int nDimensions;
+extern float *totals;
+
+void alocateTotals() {
+    totals = (float*) malloc(sizeof(float) * nDimensions);
+}
+
+void loadTotals() {
+    for(int j=0;j<nDimensions; j++) {
+        *(totals + j) = 0.0;
+    }
+
+    for(int i=0; i<nLines; i++) {
+        for(int j=0;j<nDimensions; j++) {
+            *(totals + j) += *(*(dataset + i) + j);
+        }
+    }
+    //printf("Totals:\n");
+    //for(int j=0;j<nDimensions; j++) {
+    //    printf("%f ", *(totals + j));
+    //}
+    //printf("\n");
+}
 
 void alocateDataset() {
     dataset = (float **) malloc(sizeof (float *) * nLines);
     for (int i = 0; i < nLines; i++) {
         dataset[i] = (float *) malloc(sizeof (float) * nColumns);
     }
+    alocateTotals();
 }
 
 void loadDataset(char *filename) {
@@ -25,6 +48,7 @@ void loadDataset(char *filename) {
     }
     //printf("Numero= %f", attributes[0]);
     fclose(datafile);
+    loadTotals();
 }
 
 void listDataset() {
@@ -57,6 +81,26 @@ void calculateEntitiesNorm() {
     }
 }
 
+float* getClosestEntity(float *centroid) {
+    float minDistance;
+    int colsestEntity;
+    float d;
+    for (int i = 0; i < nLines; i++) {
+        d = distance( *(dataset + i), centroid, nDimensions);
+        if(i==0) {
+            minDistance = d;
+            colsestEntity = i;
+        } 
+        else {
+            if(d < minDistance) {
+                minDistance = d;
+                colsestEntity = i;
+            }
+        }
+    }
+    return *(dataset + colsestEntity);
+}
+
 void saveDataset(char *filename) {
     int positionForClusters = nDimensions + 1;
 
@@ -81,18 +125,34 @@ void saveDataset(char *filename) {
     Return entity array
 */
 float* getDatasetQuantileEntity(float q) {
-    float *x;
+    float *x = NULL;
     int positionForNorm = nDimensions;
-    x = *(dataset);
     int flag = FALSE;
+    float lowNorm = -1;
+    float highNorm = -1;
+
     for(int i=0; i<nLines; i++) {
+        if (*(*(dataset + i) + positionForNorm) < lowNorm
+            || ( x != NULL
+                &&  *(*(dataset + i) + positionForNorm) > x[positionForNorm])) {
+            continue;
+        }
+
         if(cumulativeDistribution(*(*(dataset + i) + positionForNorm)) >= q) {
+            // A primeira vez que apaha um aceita
             if (flag == FALSE) {
                 x = *(dataset + i);
                 flag = TRUE;
+                highNorm = *(*(dataset + i) + positionForNorm);
             }
-            else if (*(*(dataset + i) + positionForNorm) < x[positionForNorm] ) {
+            else if (*(*(dataset + i) + positionForNorm) < x[positionForNorm]) {
                 x = *(dataset + i);
+                highNorm = *(*(dataset + i) + positionForNorm);
+            }
+        }
+        else {
+            if (*(*(dataset + i) + positionForNorm) > lowNorm) {
+                lowNorm = *(*(dataset + i) + positionForNorm);
             }
         }
     }
@@ -104,6 +164,7 @@ float* getDatasetQuantileEntity(float q) {
     using the dimensions vector norm saved in the penultimate position 
 */
 float cumulativeDistribution(float norm) {
+    //printf("===cumulativeDistribution===\n");
     int soma = 0;
     int positionForNorm = nDimensions;
     for(int i=0; i<nLines; i++) {

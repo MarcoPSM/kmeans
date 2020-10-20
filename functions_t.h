@@ -6,12 +6,12 @@
 
 #include <pthread.h>
 
-#define MAX_THREADS 5
+#define MAX_THREADS 50
 
 
-
-
-void initCentroids_t(float MATRIZ [][MAX_DIM], int n, int m, float centroids[][MAX_DIM], int k);
+void initCentroidsMatrix_t();
 void *initCentroid_t(void *param);
+void updateClusterAssociation_t();
+void *updateCluster_t(void *param);
 
 #endif

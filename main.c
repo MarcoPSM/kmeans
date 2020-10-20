@@ -33,6 +33,8 @@ Threads:
 #include "general.h"
 #include "centroidsMatrix.h"
 #include "datasetFile.h"
+#include "functions_t.h"
+
 
 // Matrix for dataset
 float **dataset;
@@ -42,12 +44,16 @@ int nLines;
 int nColumns;
 // Number of dimensions
 int nDimensions;
+
+float *totals;
 // Number of clusters
 int k = DEFAULT_CLUSTERS_NUMBER;
 // Max Error
 float e = DEFAULT_MAX_CONVERGENCE;
 // Matrix for centroids
 float **centroids;
+// Flag for threads
+int with_threads = FALSE;
 
 void kmeans();
 
@@ -59,10 +65,11 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
     // Output filename
-    char outfilename[] = OUTPUT;
+    char *outfilename = OUTPUT;
 
     nLines = getNumberOfEntities(argv[1]);
     nDimensions = getNumberOfDimensions(argv[1]);
+
     nColumns = nDimensions + ADDITIONAL_COLUMNS;
 
     if (nDimensions > ENTITY_MAX_DIMENSION) {
@@ -72,9 +79,9 @@ int main(int argc, char *argv[]) {
 
     alocateDataset();
     loadDataset(argv[1]);
-    listDataset();
+    //listDataset();
     calculateEntitiesNorm();
-    listFullDatasetMatrix();
+    //listFullDatasetMatrix();
     kmeans();
     saveDataset(outfilename);
 
@@ -87,22 +94,53 @@ void kmeans() {
     float aux;
     float delta;
 
+
     alocateCentroids();
     alocateOldCentroids();
-    initCentroidsMatrix();
-    listCentroidsMatrix();
+    initCentroidsMatrixV2();
 
+    /*
+    printf("????????????\n");
+    if (with_threads == TRUE) {
+        initCentroidsMatrix_t();
+    }
+    else {
+        initCentroidsMatrix();
+    }
+    */
+    
+    
     e=0;
-
+    char cbuf[30];
+    char buf[30];
     do {
+        listCentroidsMatrix();
+
         t++;
-        updateClusterAssociation();
+        if (with_threads == TRUE) {
+            updateClusterAssociation_t();
+        }
+        else {
+            updateClusterAssociation();
+        }
+        
+        //debug
+        
+        snprintf(cbuf, 30, "output/centroids_%d.out", t);
+        saveCentroids(cbuf);
+
         backupCentroids();
         updateCentroids();
         delta = getDelta();
-        printf("Delta=%f\n", delta);
+        //printf("Delta=%f\n", delta);
+
+        //debug
+        
+        snprintf(buf, 30, "output/kmeans_%d.out", t);
+        saveDataset(buf);
+
 
     } while( delta > e && t < MAX_ITERATIONS);  
     printf("Iteracaoes: %d\n", t);  
-
+    //listCentroidsMatrix();
 }

@@ -4,6 +4,16 @@
 
 #include "general.h"
 #include "functions_t.h"
+#include "datasetMatrix.h"
+#include "centroidsMatrix.h"
+
+
+extern float **dataset;
+extern int nLines;
+extern int nDimensions;
+extern int k;
+extern float **centroids;
+
 
 int iterador = 0;
 // semaforo de exclusao multipla
@@ -12,9 +22,8 @@ pthread_mutex_t sExMut;
 /*
     funcao para inicializar o vetor de centroids utilizando threads
 */
-void initCentroids_t(float MATRIZ [][MAX_DIM], int n, int m, float centroids[][MAX_DIM], int k) {
+void initCentroidsMatrix_t() {
 	int nThreads;
-	//pthread_t tid[MAX_THREADS];
 
 	if (iterador != 0) {
 		printf("%s\n", "Iterador nao esta a zero. Isto nao devia acontecer...");
@@ -27,22 +36,13 @@ void initCentroids_t(float MATRIZ [][MAX_DIM], int n, int m, float centroids[][M
 	// Abrir o semaforo
 	pthread_mutex_init(&sExMut, NULL);
 
-	void *params[5];
-	printf("%d | %d | %d\n", n,m,k);
-	params[0] = (void **)MATRIZ;
-    params[1] = &n;
-    params[2] = &m;
-    params[3] = (void **)centroids;
-    params[4] = &k;
-
 	for (int i = 0; i < nThreads; i++) {
-		//if (pthread_create(&tid[i], 0, MATRIZ, n, m, initCentroid_t, centroids, k) != 0) {
-		if (pthread_create(&tid[i], NULL, initCentroid_t, params) != 0) {
+		if (pthread_create(&tid[i], NULL, initCentroid_t, NULL) != 0) {
             printf("%s\n", "Erro na criação de tarefa.");
             exit(1);
         }
         else {
-            printf("%s%d\n", "Criada a tarefa ", (int)tid[i]);
+            //printf("%s%d\n", "Criada a tarefa ", (int)tid[i]);
         }
 	}
 
@@ -56,23 +56,13 @@ void initCentroids_t(float MATRIZ [][MAX_DIM], int n, int m, float centroids[][M
 }
 
 void *initCentroid_t(void *param) {
-	printf("DENTRO DA FUNCAO DA THREAD...\n");
-	int *nt;
-	nt = (int *)(param+1);
-	printf("nt=%d\n", *nt);
-
-	int n = *(int *)(param+1);
-	printf("n=%d\n", n);
-	int m = *(int *)(param+2);
-	printf("m=%d\n", m);
-	float (*matrix)[m] = param;
-	printf("...\n");
-	float (*centroids)[m] = param+3;
-	printf("...\n");
-	int k = *(int *)(param+4);
-	printf("k=%d\n", k);
+	//printf("DENTRO DA FUNCAO DA THREAD...\n");
 
 	int centroid;
+    float *aux;
+    float quantil;
+    int quantiles = k+1;
+
 	for (int i = 0; i < k; i++) {
 
 		pthread_mutex_lock(&sExMut);
@@ -85,25 +75,79 @@ void *initCentroid_t(void *param) {
 			pthread_mutex_unlock(&sExMut);
 			break;
 		}
-		float matriz[n][m];
-	    float *aux;
-	    int quantiles = k+1;
-	    float quantil = 1.0/ (float)quantiles * (float)(centroid+1);
 
-	    
-	    printf("%d\n", n);
-	    printf("%d\n", m);
-	    printf("%f\n", quantil);
-        
-        printf("Press Any Key to Continue\n");  
-        getchar();  
+	    quantil = 1.0/ (float)quantiles * (float)(centroid+1);
 
-		aux = NULL;//quantileFunction(matriz , n, m, quantil);
+	    //printf("%f\n", quantil);
 
-	    for (int j=0; j<m;j++) {
+		aux = getDatasetQuantileEntity(quantil);
+
+	    for (int j=0; j<nDimensions;j++) {
 	        *(*(centroids + centroid) + j)=aux[j];
 	    }
 	}
+    return NULL;
+
+}
+/***************************************************************************/
+
+void updateClusterAssociation_t() {
+
+    int nThreads;
+
+    if (iterador != 0) {
+        printf("%s\n", "Iterador nao esta a zero. Isto nao devia acontecer...");
+        exit(1);
+    }
+
+    nThreads = (nLines < MAX_THREADS) ? nLines : MAX_THREADS;
+    // array para threads
+    pthread_t tid[nThreads];
+    // Abrir o semaforo
+    pthread_mutex_init(&sExMut, NULL);
+
+    for (int i = 0; i < nThreads; i++) {
+        if (pthread_create(&tid[i], NULL, updateCluster_t, NULL) != 0) {
+            printf("%s\n", "Erro na criação de tarefa.");
+            exit(1);
+        }
+        else {
+            //printf("%s%d\n", "Criada a tarefa ", (int)tid[i]);
+        }
+    }
+
+    for (int i=0; i<nThreads; i++) {
+        pthread_join(tid[i], NULL);
+    }
+    // Fechar o semaforo
+    pthread_mutex_destroy(&sExMut);
+    iterador = 0;
+
+}
 
 
+void *updateCluster_t(void *param) {
+    int index;
+    int positionForClusters = nDimensions + 1;
+    int cluster;
+
+    for (int i = 0; i < nLines; i++) {
+
+        pthread_mutex_lock(&sExMut);
+        if (iterador<nLines) {
+            index = iterador;
+            iterador++;
+            pthread_mutex_unlock(&sExMut);
+        } 
+        else {
+            pthread_mutex_unlock(&sExMut);
+            break;
+        }
+
+        cluster = getClosetsCentroidPosition( *(dataset + index) );
+        //printf("Entidade %d CLUSTER = %d\n", index, cluster);
+        *(*(dataset + index) + positionForClusters) = cluster;
+
+    }
+    return NULL;
 }
