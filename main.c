@@ -59,16 +59,44 @@ void kmeans();
 
 /* MAIN FUNCTION */
 int main(int argc, char *argv[]) {
+    char *inputfile;
+    inputfile = NULL;
 
-    if (argc < EXPECTED_ARGUMENTS) {
-        printf("Sintaxe: \n%s <nome_ficheiro>\n", argv[0]);
+    if (argc % 2 == 0) {
+        printf("Erro numero de argumentos.\n");
         exit(1);
     }
+    argv++; //salta o nome do programa
+    while (*argv != NULL) {
+        if (strcmp(*argv, "-f") == 0) {
+            argv++;
+            inputfile = *argv;
+        }
+        else if (strcmp(*argv, "-k") == 0) {
+            argv++;
+            k = atoi(*argv);
+        }
+        else if (strcmp(*argv, "-e") == 0) {
+            argv++;
+            e = atof(*argv);
+        }
+        else {
+            printf("Erro nos argumentos.\n");
+            exit(1);
+        }
+        argv++;
+    }
+    printf("f=%s; k=%d, e=%f\n", inputfile,k,e);
+    if (inputfile == NULL) {
+        printf("Erro nos argumentos. Nao tem o nome do file.\n");
+        exit(1);
+    }
+
     // Output filename
     char *outfilename = OUTPUT;
 
-    nLines = getNumberOfEntities(argv[1]);
-    nDimensions = getNumberOfDimensions(argv[1]);
+    nLines = getNumberOfEntities(inputfile);
+    nDimensions = getNumberOfDimensions(inputfile);
 
     nColumns = nDimensions + ADDITIONAL_COLUMNS;
 
@@ -78,7 +106,7 @@ int main(int argc, char *argv[]) {
     }
 
     alocateDataset();
-    loadDataset(argv[1]);
+    loadDataset(inputfile);
     //listDataset();
     calculateEntitiesNorm();
     //listFullDatasetMatrix();
@@ -110,7 +138,6 @@ void kmeans() {
     */
     
     
-    e=0;
     char cbuf[30];
     char buf[30];
     do {
