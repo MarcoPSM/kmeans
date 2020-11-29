@@ -10,6 +10,7 @@
 
 
 void initCentroidsMatrix_t();
+void *setBottomTopDimensions_t(void *param);
 void *initCentroid_t(void *param);
 void updateClusterAssociation_t();
 void *updateCluster_t(void *param);

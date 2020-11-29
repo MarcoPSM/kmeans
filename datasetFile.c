@@ -38,7 +38,7 @@ int getNumberOfEntities(char *filename) {
         last = c;
     }
 
-    printf("The file %s has %d lines\n ", filename, nLines); 
+    printf("The file %s has %d lines\n", filename, nLines); 
 
     fclose(fp);
     return nLines;
@@ -81,7 +81,7 @@ int getNumberOfDimensions(char *filename) {
             }
         }
     }
-    printf("The file %s has %d nAttributesToWork\n ", filename, nAttributes);
+    printf("The file %s has %d nAttributesToWork\n", filename, nAttributes);
 
     fclose(fp);
 
