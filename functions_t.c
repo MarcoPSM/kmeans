@@ -13,6 +13,7 @@ extern int nLines;
 extern int nDimensions;
 extern int k;
 extern float **centroids;
+int nThreads; 
 
 
 int iterador = 0;
@@ -23,14 +24,13 @@ pthread_mutex_t sExMut;
     funcao para inicializar o vetor de centroids utilizando threads
 */
 void initCentroidsMatrix_t() {
-	int nThreads;
 
 	if (iterador != 0) {
 		printf("%s\n", "Iterador nao esta a zero. Isto nao devia acontecer...");
         exit(1);
 	}
 
-	nThreads = (k<MAX_THREADS) ? k : MAX_THREADS;
+	nThreads = (k<nThreads) ? k : nThreads;
 	// array para threads
 	pthread_t tid[nThreads];
 	// Abrir o semaforo
@@ -93,14 +93,12 @@ void *initCentroid_t(void *param) {
 
 void updateClusterAssociation_t() {
 
-    int nThreads;
-
     if (iterador != 0) {
         printf("%s\n", "Iterador nao esta a zero. Isto nao devia acontecer...");
         exit(1);
     }
 
-    nThreads = (nLines < MAX_THREADS) ? nLines : MAX_THREADS;
+    nThreads = (nLines < nThreads) ? nLines : nThreads;
     // array para threads
     pthread_t tid[nThreads];
     // Abrir o semaforo

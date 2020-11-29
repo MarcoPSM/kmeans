@@ -54,6 +54,7 @@ float e = DEFAULT_MAX_CONVERGENCE;
 float **centroids;
 // Flag for threads
 int with_threads = FALSE;
+int nThreads = MAX_THREADS;
 
 void kmeans();
 
@@ -79,6 +80,11 @@ int main(int argc, char *argv[]) {
         else if (strcmp(*argv, "-e") == 0) {
             argv++;
             e = atof(*argv);
+        }
+        else if (strcmp(*argv, "-t") == 0) {
+            argv++;
+            nThreads = atoi(*argv);
+            with_threads = TRUE;
         }
         else {
             printf("Erro nos argumentos.\n");
@@ -125,17 +131,14 @@ void kmeans() {
 
     alocateCentroids();
     alocateOldCentroids();
-    initCentroidsMatrixV2();
 
-    /*
-    printf("????????????\n");
+
     if (with_threads == TRUE) {
         initCentroidsMatrix_t();
     }
     else {
-        initCentroidsMatrix();
+        initCentroidsMatrixV2();
     }
-    */
     
     
     char cbuf[30];
