@@ -17,6 +17,9 @@
 #define DEFAULT_CLUSTERS_NUMBER 4
 #define DEFAULT_MAX_CONVERGENCE 0
 
+#define METHOD_A 1 // iterador
+#define METHOD_B 2 // bloco
+
 float norm(float v1[], int n);
 float distance(float v1[], float v2[], int n);
 void  initArray(int a[], int n, int value);

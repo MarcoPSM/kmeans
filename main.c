@@ -56,10 +56,16 @@ float **centroids;
 int with_threads = FALSE;
 int nThreads = MAX_THREADS;
 
+// definir metodo utilizado em multithread
+int active_method = METHOD_A;
+
+
 void kmeans();
+
 
 /* MAIN FUNCTION */
 int main(int argc, char *argv[]) {
+
     char *inputfile;
     inputfile = NULL;
 
@@ -134,7 +140,12 @@ void kmeans() {
 
 
     if (with_threads == TRUE) {
-        initCentroidsMatrix_t();
+        if (active_method == METHOD_B) {
+            initCentroidsMatrix_v2_t();
+        } 
+        else {
+            initCentroidsMatrix_t();
+        }        
     }
     else {
         initCentroidsMatrixV2();
@@ -144,11 +155,17 @@ void kmeans() {
     char cbuf[30];
     char buf[30];
     do {
-        listCentroidsMatrix();
+        //listCentroidsMatrix();
 
         t++;
         if (with_threads == TRUE) {
-            updateClusterAssociation_t();
+            if (active_method == METHOD_B) {
+                updateClusterAssociation_v2_t();
+            } 
+            else {
+                updateClusterAssociation_t();
+            }  
+            
         }
         else {
             updateClusterAssociation();
@@ -172,5 +189,5 @@ void kmeans() {
 
     } while( delta > e && t < MAX_ITERATIONS);  
     printf("Iteracaoes: %d\n", t);  
-    //listCentroidsMatrix();
+    listCentroidsMatrix();
 }

@@ -6,7 +6,7 @@
 #include "functions_t.h"
 #include "datasetMatrix.h"
 #include "centroidsMatrix.h"
-
+#include <float.h>
 
 extern float **dataset;
 extern int nLines;
@@ -27,6 +27,7 @@ float *steps;
 
 /*
     funcao para inicializar o vetor de centroids utilizando threads
+    Metodo 1 = Iterador
 */
 void initCentroidsMatrix_t() {
     float t[nDimensions];
@@ -49,13 +50,13 @@ void initCentroidsMatrix_t() {
 
     // Definir min e max valores para cada dimensao
 
-    nThreads = (nLines < nThreads) ? nLines : nThreads;
+    int local_nThreads = (nLines < nThreads) ? nLines : nThreads;
     // array para threads
-    pthread_t tid[nThreads];
+    pthread_t tid[local_nThreads];
     // Inicializar o semaforo
     pthread_mutex_init(&sExMut, NULL);
 
-    for (int i = 0; i < nThreads; i++) {
+    for (int i = 0; i < local_nThreads; i++) {
         if (pthread_create(&tid[i], NULL, setBottomTopDimensions_t, NULL) != 0) {
             printf("%s\n", "Erro na criação de tarefa.");
             exit(1);
@@ -65,7 +66,7 @@ void initCentroidsMatrix_t() {
         }
     }
 
-    for (int i=0; i<nThreads; i++) {
+    for (int i=0; i<local_nThreads; i++) {
         pthread_join(tid[i], NULL);
     }
     // repor o iterador
@@ -74,11 +75,13 @@ void initCentroidsMatrix_t() {
     // Definir o step
     for (int j = 0; j < nDimensions; j++) {
         steps[j] = (top[j] - bottom[j]) / (k+1);
+        printf("Step:%f ", steps[j]);
     }
+    printf("\n");
 
-	nThreads = (k<nThreads) ? k : nThreads;
+	local_nThreads = (k<nThreads) ? k : nThreads;
 
-	for (int i = 0; i < nThreads; i++) {
+	for (int i = 0; i < local_nThreads; i++) {
 		if (pthread_create(&tid[i], NULL, initCentroid_t, NULL) != 0) {
             printf("%s\n", "Erro na criação de tarefa.");
             exit(1);
@@ -88,7 +91,7 @@ void initCentroidsMatrix_t() {
         }
 	}
 
-    for (int i=0; i<nThreads; i++) {
+    for (int i=0; i<local_nThreads; i++) {
         pthread_join(tid[i], NULL);
     }
     // Fechar o semaforo
@@ -97,6 +100,88 @@ void initCentroidsMatrix_t() {
     iterador = 0;
 
 }
+
+
+/*
+    funcao para inicializar o vetor de centroids utilizando threads
+    Metodo 2 = Em bloco
+*/
+void initCentroidsMatrix_v2_t() {
+    printf("initCentroidsMatrix_v2_t\n");
+    float t[nDimensions];
+    float b[nDimensions];
+    float s[nDimensions];
+
+    for (int i=0; i<nDimensions; i++) {
+        t[i]=-FLT_MAX;
+        b[i]=FLT_MAX;
+    }
+
+
+    top = t;
+    bottom = b;
+    steps = s;
+
+    // Definir min e max valores para cada dimensao
+
+    int local_nThreads = (nLines < nThreads) ? nLines : nThreads;
+    // array para threads
+    pthread_t tid[local_nThreads];
+    // Inicializar o semaforo
+    pthread_mutex_init(&sExMut, NULL);
+    // Definir numero de entidades que cada thread vai processar (ceil)
+    int blockSize = ( nLines / local_nThreads) + ((nLines % local_nThreads) != 0);
+    int tArgs[local_nThreads][2];
+
+    for (int i = 0; i < local_nThreads; i++) {
+        tArgs[i][0] = i;
+        tArgs[i][1] = blockSize;
+        if (pthread_create(&tid[i], NULL, setBottomTopDimensions_v2_t, (void *)&tArgs[i]) != 0) {
+            printf("%s\n", "Erro na criação de tarefa.");
+            exit(1);
+        }
+        else {
+            //printf("%s%d\n", "Criada a tarefa ", (int)tid[i]);
+        }
+    }
+
+    for (int i=0; i<local_nThreads; i++) {
+        pthread_join(tid[i], NULL);
+    }
+
+    // Definir o step
+    for (int j = 0; j < nDimensions; j++) {
+        steps[j] = (top[j] - bottom[j]) / (k+1);
+        printf("Step:%f ", steps[j]);
+    }
+    printf("\n");
+
+    local_nThreads = (k<nThreads) ? k : nThreads;
+   // Definir numero de clusters que cada thread vai processar (ceil)
+    blockSize = ( k / local_nThreads) + ((k % local_nThreads) != 0);
+    printf("blockSize: %d\n", blockSize);
+    int tArgsK[local_nThreads][2];
+
+    for (int i = 0; i < local_nThreads; i++) {
+        tArgsK[i][0] = i;
+        tArgsK[i][1] = blockSize;
+        if (pthread_create(&tid[i], NULL, initCentroid_v2_t, (void *)tArgsK[i]) != 0) {
+            printf("%s\n", "Erro na criação de tarefa.");
+            exit(1);
+        }
+        else {
+            //printf("%s%d\n", "Criada a tarefa ", (int)tid[i]);
+        }
+    }
+
+    for (int i=0; i<local_nThreads; i++) {
+        pthread_join(tid[i], NULL);
+    }
+    // Fechar o semaforo
+    pthread_mutex_destroy(&sExMut);
+
+}
+
 
 void *setBottomTopDimensions_t(void *param) {
     //printf("DENTRO DA FUNCAO DA THREAD...\n");
@@ -138,6 +223,53 @@ void *setBottomTopDimensions_t(void *param) {
 
 }
 
+void *setBottomTopDimensions_v2_t(void *param) {
+    //Desta forma as threads trabalham em bloco 
+    //e nao pelo iterador
+    int *tArgs = (int *)param;
+    int index=tArgs[0]; 
+    int blockSize = tArgs[1];
+    //printf("#I:%d B:%d\n", index, blockSize);
+
+    float localTop[nDimensions];
+    float localBottom[nDimensions];
+
+    for (int i = index*blockSize; i < index*blockSize + blockSize && i<nLines; i++) {
+
+        if (i==index*blockSize) {
+            for (int j = 0; j < nDimensions; j++) {
+                localTop[j] = *(*(dataset + i) + j);
+                localBottom[j] = *(*(dataset + i) + j);
+            }
+        }
+        else {
+            for (int j = 0; j < nDimensions; j++) {
+                if (localTop[j] < *(*(dataset + i) + j) ) {
+                    localTop[j] = *(*(dataset + i) + j);
+                }
+                if (localBottom[j] > *(*(dataset + i) + j) ) {
+                    localBottom[j] = *(*(dataset + i) + j);
+                }
+            }
+        }
+
+    }
+
+    pthread_mutex_lock(&sExMut);
+    for (int j = 0; j < nDimensions; j++) {
+        if (localTop[j] > top[j] ) {
+            top[j] = localTop[j];
+        }
+        if (localBottom[j] < bottom[j]) {
+            bottom[j] = localBottom[j];
+        }
+    }
+    pthread_mutex_unlock(&sExMut);
+    
+    return NULL;
+
+}
+
 
 void *initCentroid_t(void *param) {
 	//printf("DENTRO DA FUNCAO DA THREAD...\n");
@@ -164,6 +296,25 @@ void *initCentroid_t(void *param) {
     return NULL;
 
 }
+
+void *initCentroid_v2_t(void *param) {
+    //printf("DENTRO DA FUNCAO DA THREAD...initCentroid_v2_t\n");
+
+    int *tArgs = (int *)param;
+    int index=tArgs[0]; 
+    int blockSize = tArgs[1];
+    //printf("I:%d B:%d K:%d\n", index, blockSize, k);
+    for (int i = index*blockSize; i < index*blockSize + blockSize && i < k; i++) {
+
+        for (int j=0; j<nDimensions;j++) {
+            //printf("I:%d J:%d B:%f S:%f\n", i,j,bottom[j], steps[j]);
+            *(*(centroids + i) + j) = bottom[j] + steps[j] * (i+1);
+        }
+    }
+    return NULL;
+
+}
+
 /***************************************************************************/
 
 void updateClusterAssociation_t() {
@@ -173,13 +324,13 @@ void updateClusterAssociation_t() {
         exit(1);
     }
 
-    nThreads = (nLines < nThreads) ? nLines : nThreads;
+    int local_nThreads = (nLines < nThreads) ? nLines : nThreads;
     // array para threads
-    pthread_t tid[nThreads];
+    pthread_t tid[local_nThreads];
     // Abrir o semaforo
     pthread_mutex_init(&sExMut, NULL);
 
-    for (int i = 0; i < nThreads; i++) {
+    for (int i = 0; i < local_nThreads; i++) {
         if (pthread_create(&tid[i], NULL, updateCluster_t, NULL) != 0) {
             printf("%s\n", "Erro na criação de tarefa.");
             exit(1);
@@ -189,7 +340,7 @@ void updateClusterAssociation_t() {
         }
     }
 
-    for (int i=0; i<nThreads; i++) {
+    for (int i=0; i<local_nThreads; i++) {
         pthread_join(tid[i], NULL);
     }
     // Fechar o semaforo
@@ -198,6 +349,42 @@ void updateClusterAssociation_t() {
 
 }
 
+void updateClusterAssociation_v2_t() {
+
+    if (iterador != 0) {
+        printf("%s\n", "Iterador nao esta a zero. Isto nao devia acontecer...");
+        exit(1);
+    }
+
+    int local_nThreads = (nLines < nThreads) ? nLines : nThreads;
+    // array para threads
+    pthread_t tid[local_nThreads];
+    // Abrir o semaforo
+    pthread_mutex_init(&sExMut, NULL);
+    // Definir numero de entidades que cada thread vai processar (ceil)
+    int blockSize = ( nLines / local_nThreads) + ((nLines % local_nThreads) != 0);
+    int tArgs[local_nThreads][2];
+
+    for (int i = 0; i < local_nThreads; i++) {
+        tArgs[i][0] = i;
+        tArgs[i][1] = blockSize;
+        if (pthread_create(&tid[i], NULL, updateCluster_v2_t, (void *)&tArgs[i]) != 0) {
+            printf("%s\n", "Erro na criação de tarefa.");
+            exit(1);
+        }
+        else {
+            //printf("%s%d\n", "Criada a tarefa ", (int)tid[i]);
+        }
+    }
+
+    for (int i=0; i<local_nThreads; i++) {
+        pthread_join(tid[i], NULL);
+    }
+    // Fechar o semaforo
+    pthread_mutex_destroy(&sExMut);
+
+
+}
 
 void *updateCluster_t(void *param) {
     int index;
@@ -220,6 +407,24 @@ void *updateCluster_t(void *param) {
         cluster = getClosetsCentroidPosition( *(dataset + index) );
         //printf("Entidade %d CLUSTER = %d\n", index, cluster);
         *(*(dataset + index) + positionForClusters) = cluster;
+
+    }
+    return NULL;
+}
+
+void *updateCluster_v2_t(void *param) {
+    int positionForClusters = nDimensions + 1;
+    int cluster;
+
+    int *tArgs = (int *)param;
+    int index=tArgs[0]; 
+    int blockSize = tArgs[1];
+    //printf("I:%d B:%d K:%d\n", index, blockSize, k);
+    for (int i = index*blockSize; i < index*blockSize + blockSize && i < nLines; i++) {
+
+        cluster = getClosetsCentroidPosition( *(dataset + i) );
+        //printf("Entidade %d CLUSTER = %d\n", index, cluster);
+        *(*(dataset + i) + positionForClusters) = cluster;
 
     }
     return NULL;
