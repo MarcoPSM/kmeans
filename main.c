@@ -106,6 +106,7 @@ int main(int argc, char *argv[]) {
 
     // Output filename
     char *outfilename = OUTPUT;
+    char *outCentroidsFile = OUTPUT_C;
 
     nLines = getNumberOfEntities(inputfile);
     nDimensions = getNumberOfDimensions(inputfile);
@@ -124,6 +125,7 @@ int main(int argc, char *argv[]) {
     //listFullDatasetMatrix();
     kmeans();
     saveDataset(outfilename);
+    saveCentroids(outCentroidsFile);
 
     return 0;
 }
@@ -173,8 +175,8 @@ void kmeans() {
         
         //debug
         
-        snprintf(cbuf, 30, "output/centroids_%d.out", t);
-        saveCentroids(cbuf);
+        //snprintf(cbuf, 30, "output/centroids_%d.out", t);
+        //saveCentroids(cbuf);
 
         backupCentroids();
         updateCentroids();
@@ -183,8 +185,8 @@ void kmeans() {
 
         //debug
         
-        snprintf(buf, 30, "output/kmeans_%d.out", t);
-        saveDataset(buf);
+        //snprintf(buf, 30, "output/kmeans_%d.out", t);
+        //saveDataset(buf);
 
 
     } while( delta > e && t < MAX_ITERATIONS);  

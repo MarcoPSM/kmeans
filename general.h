@@ -14,6 +14,7 @@
 #define SPACE ' '
 #define MAX_ITERATIONS 100
 #define OUTPUT "output/kmeans.out"
+#define OUTPUT_C "output/centroids.out"
 #define DEFAULT_CLUSTERS_NUMBER 4
 #define DEFAULT_MAX_CONVERGENCE 0
 

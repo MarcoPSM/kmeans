@@ -6,9 +6,17 @@
 # sudo apt install fig2dev
 # sudo apt install pstoedit
 
+
 dimensions = 2;
 
-f = fopen("kmeans_12.out");
+# colors as RGB values
+colorspec = {[0.9 0.1 0.1]; [0.1 0.9 0.1]; [0.1 0.1 0.9]; 
+             [0.9 0.5 0.1]; [0.1 0.9 0.5]; [0.5 0.1 0.9]; 
+             [0.9 0.5 0.5]; [0.5 0.9 0.5]; [0.5 0.5 0.9]; 
+             [0.9 0.9 0.1]; [0.1 0.9 0.9]; [0.9 0.1 0.9];
+             [0.5 0.5 0.5]; [0.7 0.5 0.1]; [0.1 0.5 0.7]; };
+
+f = fopen("kmeans.out");
 data = dlmread(f, ' ');
 fclose(f);
 
@@ -29,12 +37,13 @@ else
 endif
 
 ################ centroids ####
-f = fopen("centroids_12.out");
+f = fopen("centroids.out");
 centroids_data = dlmread(f, ' ');
 fclose(f);
 cx = [centroids_data(:, 1)];
 cy = [centroids_data(:, 2)];
 ###############################
+
 figure(1);
 hold on;
 
@@ -49,11 +58,13 @@ for i=0:nClusters
         my = zeros(size(mx)(1));
     endif
 
-    plot(mx,my,strcat(".",num2str(i+1)));
+    #plot(mx,my,strcat(".",num2str(i+1)));
+    plot(mx,my, '.', 'Color', colorspec{mod(i,15)+1}); 
 end;
 #### centroids ####
 plot(cx,cy,"*k", "markersize", 10);
 ###################
+
 hold off;
 xlabel("x");
 ylabel("y");
