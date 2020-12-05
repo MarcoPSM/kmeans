@@ -59,6 +59,9 @@ int nThreads = MAX_THREADS;
 // definir metodo utilizado em multithread
 int active_method = METHOD_A;
 
+// Set debig mode
+int DEBUG = FALSE;
+
 
 void kmeans();
 
@@ -68,11 +71,12 @@ int main(int argc, char *argv[]) {
 
     char *inputfile;
     inputfile = NULL;
-
+    /*
     if (argc % 2 == 0) {
         printf("Erro numero de argumentos.\n");
         exit(1);
     }
+    */
     argv++; //salta o nome do programa
     while (*argv != NULL) {
         if (strcmp(*argv, "-f") == 0) {
@@ -91,6 +95,9 @@ int main(int argc, char *argv[]) {
             argv++;
             nThreads = atoi(*argv);
             with_threads = TRUE;
+        }
+        else if (strcmp(*argv, "-d") == 0) {
+            DEBUG = TRUE;
         }
         else {
             printf("Erro nos argumentos.\n");
@@ -121,9 +128,15 @@ int main(int argc, char *argv[]) {
     alocateDataset();
     loadDataset(inputfile);
     //listDataset();
+
+    // Start timer 
+    time_t secounds = time(NULL);
+
     calculateEntitiesNorm();
     //listFullDatasetMatrix();
     kmeans();
+    printf("Execution time(secounds): %ld\n", time(NULL) - secounds);
+
     saveDataset(outfilename);
     saveCentroids(outCentroidsFile);
 
@@ -191,5 +204,7 @@ void kmeans() {
 
     } while( delta > e && t < MAX_ITERATIONS);  
     printf("Iteracaoes: %d\n", t);  
-    listCentroidsMatrix();
+    if (DEBUG == TRUE) {
+        listCentroidsMatrix();
+    }
 }

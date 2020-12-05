@@ -13,6 +13,7 @@ extern int nDimensions;
 extern float **dataset;
 extern int nLines;
 extern float *totals;
+extern int DEBUG;
 
 float **oldCentroids;
 
@@ -43,7 +44,9 @@ void initCentroidsMatrix() {
 
     for (int i=0; i<k; i++) {
     	quantil = (1.0/quantiles) * (i+1);
-        printf("quantil=%f\n", quantil);
+        if (DEBUG == TRUE) {
+            printf("quantil=%f\n", quantil);
+        }
         aux = getDatasetQuantileEntity(quantil);
 
         for (int j=0; j<nDimensions;j++) {
@@ -163,23 +166,27 @@ void updateCentroids() {
             *(*(centroids + i) + j) /= cnt[i];
         }
     }
-    //debug
-    //printf("-------------------\n");
-    //listCentroidsMatrix();
-    //printf("-------------------\n");
-    for (int i=0; i<k; i++) {
-        printf("Contador: %d ", cnt[i]);
+    if (DEBUG == TRUE) {
+        //debug
+        //printf("-------------------\n");
+        //listCentroidsMatrix();
+        //printf("-------------------\n");
+        for (int i=0; i<k; i++) {
+            printf("Contador: %d ", cnt[i]);
+        }
+        printf("\n");
     }
-    printf("\n");
 }
 
 void recalculateCentroid(int i) {
     float *aux;
     aux = getClosestEntity( *(oldCentroids + i) );
-    for (int l = 0; l < nDimensions; l++) {
-        printf("a%d: %f",l, *(aux + l));
+    if (DEBUG == TRUE) {
+        for (int l = 0; l < nDimensions; l++) {
+            printf("a%d: %f",l, *(aux + l));
+        }
+        printf("\n");
     }
-    printf("\n");
     for (int j=0; j<nDimensions; j++) {
         *(*(centroids + i) + j) = *(aux + j);
     }
@@ -187,12 +194,15 @@ void recalculateCentroid(int i) {
 
 float getDelta() {
     float delta = 0;
-    printf("DISTANCE = ");
     for(int i=0; i<k; i++) {
-    	printf("%f ", distance(*(centroids + i), *(oldCentroids + i), nDimensions) );
+        if (DEBUG == TRUE) {
+            printf("DISTANCE = %f ", distance(*(centroids + i), *(oldCentroids + i), nDimensions) );
+        }
         delta += distance(*(centroids + i), *(oldCentroids + i), nDimensions);
     }
-    printf("\n");
+    if (DEBUG == TRUE) {
+        printf("\n");
+    }
     return delta;
 }
 

@@ -14,7 +14,7 @@ extern int nDimensions;
 extern int k;
 extern float **centroids;
 extern int nThreads; 
-
+extern int DEBUG;
 
 
 int iterador = 0;
@@ -36,13 +36,14 @@ void initCentroidsMatrix_t() {
     top = t;
     bottom = b;
     steps = s;
-
-    printf("initCentroidsMatrix_t\n");
-    for (int i=0; i<nDimensions; i++) {
-        printf("%f ", top[i]);
+    if (DEBUG == TRUE) {
+        printf("initCentroidsMatrix_t\n");
+        for (int i=0; i<nDimensions; i++) {
+            printf("%f ", top[i]);
+        }
+        printf("\n");
     }
-    printf("\n");
-
+    
 	if (iterador != 0) {
 		printf("%s\n", "Iterador nao esta a zero. Isto nao devia acontecer...");
         exit(1);
@@ -75,9 +76,13 @@ void initCentroidsMatrix_t() {
     // Definir o step
     for (int j = 0; j < nDimensions; j++) {
         steps[j] = (top[j] - bottom[j]) / (k+1);
-        printf("Step:%f ", steps[j]);
+        if (DEBUG == TRUE) {
+            printf("Step:%f ", steps[j]);
+        }
     }
-    printf("\n");
+    if (DEBUG == TRUE) {
+        printf("\n");
+    }
 
 	local_nThreads = (k<nThreads) ? k : nThreads;
 
@@ -107,7 +112,9 @@ void initCentroidsMatrix_t() {
     Metodo 2 = Em bloco
 */
 void initCentroidsMatrix_v2_t() {
-    printf("initCentroidsMatrix_v2_t\n");
+    if (DEBUG == TRUE) {
+        printf("initCentroidsMatrix_v2_t\n");
+    }
     float t[nDimensions];
     float b[nDimensions];
     float s[nDimensions];
@@ -116,7 +123,6 @@ void initCentroidsMatrix_v2_t() {
         t[i]=-FLT_MAX;
         b[i]=FLT_MAX;
     }
-
 
     top = t;
     bottom = b;
@@ -152,14 +158,20 @@ void initCentroidsMatrix_v2_t() {
     // Definir o step
     for (int j = 0; j < nDimensions; j++) {
         steps[j] = (top[j] - bottom[j]) / (k+1);
-        printf("Step:%f ", steps[j]);
+        if (DEBUG == TRUE) {
+            printf("Step:%f ", steps[j]);
+        }
     }
-    printf("\n");
+    if (DEBUG == TRUE) {
+        printf("\n");
+    }
 
     local_nThreads = (k<nThreads) ? k : nThreads;
    // Definir numero de clusters que cada thread vai processar (ceil)
     blockSize = ( k / local_nThreads) + ((k % local_nThreads) != 0);
-    printf("blockSize: %d\n", blockSize);
+    if (DEBUG == TRUE) {
+        printf("blockSize: %d\n", blockSize);
+    }
     int tArgsK[local_nThreads][2];
 
     for (int i = 0; i < local_nThreads; i++) {
