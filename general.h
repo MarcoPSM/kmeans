@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <float.h>
 
 #define EXPECTED_ARGUMENTS 2
 #define ADDITIONAL_COLUMNS 2

@@ -57,7 +57,7 @@ int with_threads = FALSE;
 int nThreads = MAX_THREADS;
 
 // definir metodo utilizado em multithread
-int active_method = METHOD_A;
+int active_method = METHOD_B;
 
 // Set debig mode
 int DEBUG = FALSE;
@@ -125,15 +125,12 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    alocateDataset();
-    loadDataset(inputfile);
-    //listDataset();
-
     // Start timer 
     time_t secounds = time(NULL);
 
-    calculateEntitiesNorm();
-    //listFullDatasetMatrix();
+    alocateDataset();
+    loadDataset(inputfile);
+
     kmeans();
     printf("Execution time(secounds): %ld\n", time(NULL) - secounds);
 
@@ -155,16 +152,12 @@ void kmeans() {
 
 
     if (with_threads == TRUE) {
-        if (active_method == METHOD_B) {
-            initCentroidsMatrix_v2_t();
-        } 
-        else {
-            initCentroidsMatrix_t();
-        }        
+        initCentroidsMatrix_t();      
     }
     else {
-        initCentroidsMatrixV2();
+        initCentroidsMatrix();
     }
+    listCentroidsMatrix();
     
     
     char cbuf[30];

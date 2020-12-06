@@ -37,65 +37,41 @@ void alocateOldCentroids() {
         oldCentroids[i] = (float *) malloc(sizeof (float) * nDimensions);
     }
 }
+
 void initCentroidsMatrix() {
-    float *aux;
-    int quantiles = k+1;
-    float quantil;
+    int positionForNorm = nDimensions;
+    int distant_entity;
+    float minDistance, d;
 
-    for (int i=0; i<k; i++) {
-    	quantil = (1.0/quantiles) * (i+1);
-        if (DEBUG == TRUE) {
-            printf("quantil=%f\n", quantil);
+    for (int c=0; c<k; c++) {
+        distant_entity = 0;
+        for (int i = 0; i < nLines; i++) {
+            minDistance = FLT_MAX;
+            for (int ic=0; ic < c; ic++) {
+                d = distance(*(dataset + i), *(centroids + ic), nDimensions);
+                if (d < minDistance){
+                    minDistance = d;
+                }
+            }
+            if (minDistance == -1) {
+                *(*(dataset + i) + positionForNorm) = norm(*(dataset + i), nDimensions);
+            }
+            else {
+                *(*(dataset + i) + positionForNorm) = minDistance;
+            }
+            if (*(*(dataset + i) + positionForNorm) > *(*(dataset + distant_entity) + positionForNorm)) {
+                distant_entity = i;
+            }
         }
-        aux = getDatasetQuantileEntity(quantil);
 
-        for (int j=0; j<nDimensions;j++) {
-            *(*(centroids + i) + j) = aux[j];
+        // copy most distant entity values into centroid
+        for (int j=0; j<nDimensions; j++) {
+            *(*(centroids + c) + j) = *(*(dataset + distant_entity) + j);
         }
+        printf("Entidade: %d\n", distant_entity);
     }
 }
 
-void initCentroidsMatrixV2() {
-    /*
-    DESTA FORMA NAO FAZ SENTIDO NENHUM
-    tenho de apanhar o mair e menor x, o maior e menor y 
-    fazer a diferenca e essa diferenca e que se divide em 5
-    e depois vai se somando apartir do menor
-    */
-    float top[nDimensions];
-    float bottom[nDimensions];
-    float steps[nDimensions];
-
-    for (int i=0; i<nLines; i++) {
-        if (i==0) {
-            for (int j = 0; j < nDimensions; j++) {
-                top[j] = *(*(dataset + i) + j);
-                bottom[j] = *(*(dataset + i) + j);
-            }
-        }
-        else {
-            for (int j = 0; j < nDimensions; j++) {
-                if (top[j] < *(*(dataset + i) + j) ) {
-                    top[j] = *(*(dataset + i) + j);
-                }
-                if (bottom[j] > *(*(dataset + i) + j) ) {
-                    bottom[j] = *(*(dataset + i) + j);
-                }
-            }
-        }
-    }
-    for (int j = 0; j < nDimensions; j++) {
-        steps[j] = (top[j] - bottom[j]) / (k+1);
-    }
-
-    for (int i=0; i<k; i++) {
-        //printf("i=%d ", i );
-        for (int j=0; j<nDimensions;j++) {
-            //printf("Coluna=%d steps=%f centroid=%f\n", j, steps[j], bottom[j] + steps[j] * (i+1) );
-            *(*(centroids + i) + j) = bottom[j] + steps[j] * (i+1);
-        }
-    }
-}
 
 void listCentroidsMatrix() {
     printf("LISTAR CENTROIDS MATRIX\n");
