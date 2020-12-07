@@ -13,13 +13,14 @@
     v1 Pointer for vector 
     n  Vector dimension
 */
-float norm(float v1[], int n) {
-    float d = 0;
+double norm(double v1[], int n) {
+    double d = 0;
     for (int i=0; i<n; i++) {
         d += pow (v1[i], 2);
     }
     return sqrt(d);
 }
+
 /*
   Calculate Euclidean distance between 2 vectores.
   Args: 
@@ -27,8 +28,8 @@ float norm(float v1[], int n) {
     v2 Pointer for vector 2
     n  Vectores dimensions
 */
-float distance(float v1[], float v2[], int n) {
-    float d = 0;
+double distance(double v1[], double v2[], int n) {
+    double d = 0;
     for (int i=0; i<n; i++) {
         d += pow (v1[i]-v2[i], 2);
     }
@@ -37,6 +38,9 @@ float distance(float v1[], float v2[], int n) {
     return d;
 }
 
+/**
+  Array initialization with a specific value
+*/
 void  initArray(int a[], int n, int value) {
     for (int i=0; i<n; i++) {
         a[i]=value;

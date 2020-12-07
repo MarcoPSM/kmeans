@@ -1,33 +1,16 @@
 /******************************************
- * Marco Martins                          *
+ * Marco Martins (1100619)                *
  * projeto final de curso Eng.Informática *
- * algoritmo na pag. 344                  *
+ * Ano: 2019/2020                         *
  ******************************************/
 
 /*
-PLANO :
-    a estrutura é um ponteiro para array de floats e
-        mais alguns foalts para a media dos atributos 
-        a variacao dos atributos e mais alguma coisa que me lembre
-    
-    
-    Implementar todas as funcoes da analise univariavel
-    escrever o output num ficheiro
-    mostrar um grafico com octave
-    O dicheiro de entrada tem de entrar por argumento
-
+Compilar:
 cc main.c general.c datasetMatrix.c centroidsMatrix.c datasetFile.c functions_t.c -lm -pthread -o kmeans
-
+Executar:
+./kmeans -f datafiles/ds3d1milhoes.txt -k 8 -e 0.001 -t 4
 */
 
-
-/* 
-https://www.tutorialspoint.com/c_standard_library/limits_h.htm 
-pointers:
-    https://codeforwin.org/2017/12/access-two-dimensional-array-using-pointers-c-programming.html
-Threads:
-    https://timmurphy.org/2010/05/04/pthreads-in-c-a-minimal-working-example/
-*/
 
 #include "datasetMatrix.h"
 #include "general.h"
@@ -37,7 +20,7 @@ Threads:
 
 
 // Matrix for dataset
-float **dataset;
+double **dataset;
 // Number of lines
 int nLines;
 // Number of columns
@@ -45,13 +28,13 @@ int nColumns;
 // Number of dimensions
 int nDimensions;
 
-float *totals;
+double *totals;
 // Number of clusters
 int k = DEFAULT_CLUSTERS_NUMBER;
 // Max Error
-float e = DEFAULT_MAX_CONVERGENCE;
+double e = DEFAULT_MAX_CONVERGENCE;
 // Matrix for centroids
-float **centroids;
+double **centroids;
 // Flag for threads
 int with_threads = FALSE;
 int nThreads = MAX_THREADS;
@@ -143,12 +126,13 @@ int main(int argc, char *argv[]) {
 void kmeans() {
     /*iterador*/
     int t=0;
-    float aux;
-    float delta;
+    double aux;
+    double delta;
 
 
     alocateCentroids();
-    alocateOldCentroids();
+    alocateNewCentroids();
+    resetNewCentroids();
 
 
     if (with_threads == TRUE) {
@@ -157,45 +141,27 @@ void kmeans() {
     else {
         initCentroidsMatrix();
     }
-    listCentroidsMatrix();
     
     
-    char cbuf[30];
-    char buf[30];
     do {
-        //listCentroidsMatrix();
+
+        copyCentroidsFromNewCentroids();
+        resetNewCentroids();
 
         t++;
+
         if (with_threads == TRUE) {
-            if (active_method == METHOD_B) {
-                updateClusterAssociation_v2_t();
-            } 
-            else {
-                updateClusterAssociation_t();
-            }  
-            
+            updateClusterAssociation_t();
         }
         else {
             updateClusterAssociation();
         }
-        
-        //debug
-        
-        //snprintf(cbuf, 30, "output/centroids_%d.out", t);
-        //saveCentroids(cbuf);
 
-        backupCentroids();
-        updateCentroids();
         delta = getDelta();
         //printf("Delta=%f\n", delta);
 
-        //debug
-        
-        //snprintf(buf, 30, "output/kmeans_%d.out", t);
-        //saveDataset(buf);
-
-
     } while( delta > e && t < MAX_ITERATIONS);  
+    
     printf("Iteracaoes: %d\n", t);  
     if (DEBUG == TRUE) {
         listCentroidsMatrix();

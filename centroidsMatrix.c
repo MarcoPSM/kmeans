@@ -7,69 +7,84 @@
 #include "datasetMatrix.h"
 #include "general.h"
 
-extern float **centroids;
+extern double **centroids;
 extern int k;
 extern int nDimensions;
-extern float **dataset;
+extern double **dataset;
 extern int nLines;
-extern float *totals;
+extern double *totals;
 extern int DEBUG;
 
-float **oldCentroids;
+double **newCentroids;
 
-void resetCentroids() {
+void resetNewCentroids() {
     for (int i=0; i<k; i++) {
         for (int j=0; j<nDimensions; j++) {
-            *(*(centroids + i) + j) = 0;
+            *(*(newCentroids + i) + j) = 0;
         }
     }
 }
 
 void alocateCentroids() {
-    centroids = (float **) malloc(sizeof (float *) * k);
+    centroids = (double **) malloc(sizeof (double *) * k);
     for (int i = 0; i < k; i++) {
-        centroids[i] = (float *) malloc(sizeof (float) * nDimensions);
+        centroids[i] = (double *) malloc(sizeof (double) * nDimensions);
     }
 }
-void alocateOldCentroids() {
-    oldCentroids = (float **) malloc(sizeof (float *) * k);
+void alocateNewCentroids() {
+    newCentroids = (double **) malloc(sizeof (double *) * k);
     for (int i = 0; i < k; i++) {
-        oldCentroids[i] = (float *) malloc(sizeof (float) * nDimensions);
+        newCentroids[i] = (double *) malloc(sizeof (double) * nDimensions);
+    }
+}
+
+void copyCentroidsFromNewCentroids() {
+    for (int i=0; i<k; i++) {
+        for (int j=0; j<nDimensions; j++) {
+            *(*(centroids + i) + j) = *(*(newCentroids + i) + j);
+        }
     }
 }
 
 void initCentroidsMatrix() {
     int positionForNorm = nDimensions;
     int distant_entity;
-    float minDistance, d;
+    double minDistance, d;
 
     for (int c=0; c<k; c++) {
         distant_entity = 0;
         for (int i = 0; i < nLines; i++) {
             minDistance = FLT_MAX;
             for (int ic=0; ic < c; ic++) {
-                d = distance(*(dataset + i), *(centroids + ic), nDimensions);
+                d = distance(*(dataset + i), *(newCentroids + ic), nDimensions);
                 if (d < minDistance){
                     minDistance = d;
                 }
             }
-            if (minDistance == -1) {
+
+            if (minDistance == FLT_MAX) {
                 *(*(dataset + i) + positionForNorm) = norm(*(dataset + i), nDimensions);
             }
             else {
                 *(*(dataset + i) + positionForNorm) = minDistance;
             }
+
             if (*(*(dataset + i) + positionForNorm) > *(*(dataset + distant_entity) + positionForNorm)) {
                 distant_entity = i;
+            }
+            if (*(*(dataset + distant_entity) + positionForNorm) < 0)
+            {
+                printf("NUNCA PODE ENTRAR AQUI:::\n");
             }
         }
 
         // copy most distant entity values into centroid
         for (int j=0; j<nDimensions; j++) {
-            *(*(centroids + c) + j) = *(*(dataset + distant_entity) + j);
+            *(*(newCentroids + c) + j) = *(*(dataset + distant_entity) + j);
         }
-        printf("Entidade: %d\n", distant_entity);
+
     }
+
 }
 
 
@@ -85,10 +100,10 @@ void listCentroidsMatrix() {
     }
 }
 
-int getClosetsCentroidPosition(float *entity) {
-    float minDistance;
+int getClosetsCentroidPosition(double *entity) {
+    double minDistance;
     int colsestCentroid;
-    float d;
+    double d;
 
     for(int i=0; i<k; i++) {
         d = distance(entity, *(centroids + i), nDimensions);
@@ -107,20 +122,13 @@ int getClosetsCentroidPosition(float *entity) {
     return colsestCentroid;
 }
 
-void backupCentroids() {
-    for (int i=0; i<k; i++) {
-        for (int j=0; j<nDimensions; j++) {
-            *(*(oldCentroids + i) + j) = *(*(centroids + i) + j);
-        }
-    }
-}
 
 void updateCentroids() {
     int cnt[k];
     initArray(cnt, k, 0);
     int positionForClusters = nDimensions + 1;
 
-    resetCentroids();
+    //resetCentroids();
 
     // Recalcular centroids fazendo media
     for (int i=0; i<nLines; i++) {
@@ -155,26 +163,21 @@ void updateCentroids() {
 }
 
 void recalculateCentroid(int i) {
-    float *aux;
-    aux = getClosestEntity( *(oldCentroids + i) );
-    if (DEBUG == TRUE) {
-        for (int l = 0; l < nDimensions; l++) {
-            printf("a%d: %f",l, *(aux + l));
-        }
-        printf("\n");
-    }
+    double *aux;
+    aux = getClosestEntity( *(centroids + i) );
+
     for (int j=0; j<nDimensions; j++) {
-        *(*(centroids + i) + j) = *(aux + j);
+        *(*(newCentroids + i) + j) = *(aux + j);
     }
 }
 
-float getDelta() {
-    float delta = 0;
+double getDelta() {
+    double delta = 0;
     for(int i=0; i<k; i++) {
         if (DEBUG == TRUE) {
-            printf("DISTANCE = %f ", distance(*(centroids + i), *(oldCentroids + i), nDimensions) );
+            printf("DISTANCE = %f ", distance(*(centroids + i), *(newCentroids + i), nDimensions) );
         }
-        delta += distance(*(centroids + i), *(oldCentroids + i), nDimensions);
+        delta += distance(*(centroids + i), *(newCentroids + i), nDimensions);
     }
     if (DEBUG == TRUE) {
         printf("\n");

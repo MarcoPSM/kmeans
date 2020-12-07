@@ -1,16 +1,16 @@
 #ifndef CM_H
 #define CM_H 
 
-void resetCentroids();
+void resetNewCentroids();
 void alocateCentroids();
-void alocateOldCentroids();
+void alocateNewCentroids();
+void copyCentroidsFromNewCentroids();
 void initCentroidsMatrix();
 void listCentroidsMatrix();
-int getClosetsCentroidPosition(float *entity);
-void backupCentroids();
+int getClosetsCentroidPosition(double *entity);
 void updateCentroids();
 void recalculateCentroid(int i);
-float getDelta();
+double getDelta();
 void saveCentroids(char *filename);
 
 #endif

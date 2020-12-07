@@ -10,10 +10,10 @@ void loadDataset(char *filename);
 void listDataset();
 void listFullDatasetMatrix();
 void calculateEntitiesNorm();
-float* getClosestEntity(float *centroid);
+double* getClosestEntity(double *centroid);
 void saveDataset(char *filename);
-float* getDatasetQuantileEntity(float q);
-float cumulativeDistribution(float norm);
+double* getDatasetQuantileEntity(double q);
+double cumulativeDistribution(double norm);
 void updateClusterAssociation();
 
 #endif

@@ -5,8 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <float.h>
 
+#define FLT_MAX 340282346638528859811704183484516925440.0
 #define EXPECTED_ARGUMENTS 2
 #define ADDITIONAL_COLUMNS 2
 #define ENTITY_MAX_DIMENSION 4
@@ -23,8 +23,8 @@
 #define METHOD_A 1 // iterador
 #define METHOD_B 2 // bloco
 
-float norm(float v1[], int n);
-float distance(float v1[], float v2[], int n);
+double norm(double v1[], int n);
+double distance(double v1[], double v2[], int n);
 void  initArray(int a[], int n, int value);
 
 #endif

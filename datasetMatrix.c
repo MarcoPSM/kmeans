@@ -1,14 +1,16 @@
 #include "datasetMatrix.h"
 #include "centroidsMatrix.h"
 
-extern float **dataset;
+extern double **dataset;
 extern int nLines;
 extern int nColumns;
 extern int nDimensions;
-extern float *totals;
+extern double *totals;
+extern int k;
+extern double **newCentroids;
 
 void alocateTotals() {
-    totals = (float*) malloc(sizeof(float) * nDimensions);
+    totals = (double*) malloc(sizeof(double) * nDimensions);
 }
 
 void loadTotals() {
@@ -21,17 +23,12 @@ void loadTotals() {
             *(totals + j) += *(*(dataset + i) + j);
         }
     }
-    //printf("Totals:\n");
-    //for(int j=0;j<nDimensions; j++) {
-    //    printf("%f ", *(totals + j));
-    //}
-    //printf("\n");
 }
 
 void alocateDataset() {
-    dataset = (float **) malloc(sizeof (float *) * nLines);
+    dataset = (double **) malloc(sizeof (double *) * nLines);
     for (int i = 0; i < nLines; i++) {
-        dataset[i] = (float *) malloc(sizeof (float) * nColumns);
+        dataset[i] = (double *) malloc(sizeof (double) * nColumns);
     }
     alocateTotals();
 }
@@ -41,7 +38,7 @@ void loadDataset(char *filename) {
     datafile=fopen(filename, "r");
     for(int i=0; i<nLines; i++) {
         for(int j=0;j<nDimensions; j++) {
-            if( !fscanf(datafile, "%f", &dataset[i][j]) ) {
+            if( !fscanf(datafile, "%lf", &dataset[i][j]) ) {
                 break;
             }
         }
@@ -81,10 +78,10 @@ void calculateEntitiesNorm() {
     }
 }
 
-float* getClosestEntity(float *centroid) {
-    float minDistance;
+double* getClosestEntity(double *centroid) {
+    double minDistance;
     int colsestEntity;
-    float d;
+    double d;
     for (int i = 0; i < nLines; i++) {
         d = distance( *(dataset + i), centroid, nDimensions);
         if(i==0) {
@@ -124,12 +121,12 @@ void saveDataset(char *filename) {
 
     Return entity array
 */
-float* getDatasetQuantileEntity(float q) {
-    float *x = NULL;
+double* getDatasetQuantileEntity(double q) {
+    double *x = NULL;
     int positionForNorm = nDimensions;
     int flag = FALSE;
-    float lowNorm = -1;
-    float highNorm = -1;
+    double lowNorm = -1;
+    double highNorm = -1;
 
     for(int i=0; i<nLines; i++) {
         if (*(*(dataset + i) + positionForNorm) < lowNorm
@@ -163,7 +160,7 @@ float* getDatasetQuantileEntity(float q) {
     Empirical Cumulative Distribution Function
     using the dimensions vector norm saved in the penultimate position 
 */
-float cumulativeDistribution(float norm) {
+double cumulativeDistribution(double norm) {
     //printf("===cumulativeDistribution===\n");
     int soma = 0;
     int positionForNorm = nDimensions;
@@ -172,15 +169,37 @@ float cumulativeDistribution(float norm) {
             soma++;
         }
     }
-    //printf("Norma=%f Soma=%d n=%d CDF = %f \n", norm, soma, n, (float)soma / (float) n);
-    return (float)soma / (float) nLines;
+    //printf("Norma=%f Soma=%d n=%d CDF = %f \n", norm, soma, n, (double)soma / (double) n);
+    return (double)soma / (double) nLines;
 }
 
 void updateClusterAssociation() {
+    int cnt[k];
+    initArray(cnt, k, 0);
     int positionForClusters = nDimensions + 1;
     int cluster;
+
     for (int i=0; i<nLines; i++) {
         cluster = getClosetsCentroidPosition( *(dataset + i) );
         *(*(dataset + i) + positionForClusters) = cluster;
+
+        for (int j=0; j<nDimensions; j++) {
+            // soma os valores
+            *(*(newCentroids + cluster) + j) +=  *(*(dataset + i) + j);
+        }
+        // contabiliza quantos foram somadas em cada cluster
+        cnt[cluster] ++;
+    }
+
+    for (int i=0; i<k; i++) {
+        if (cnt[i]==0) {
+            recalculateCentroid(i);
+            continue;
+        }
+        //printf("C:%d T:%d\n", i, cnt[i]);
+        for (int j=0; j<nDimensions; j++) {
+            // calcula a media
+            *(*(newCentroids + i) + j) /= cnt[i];
+        }
     }
 }
